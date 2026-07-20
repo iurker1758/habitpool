@@ -4,6 +4,20 @@ Habit-formation PWA: completing daily habits unlocks slices of a weekly "fun mon
 pool. Monorepo: `backend/` (FastAPI + async SQLAlchemy + Postgres) and `frontend/`
 (Vite + React + TypeScript PWA). Why-docs live in `DECISIONS.md`.
 
+Deployment target (DECISIONS.md #9–10): frontend on Cloudflare under a subdomain of
+an owned domain; backend + Postgres on a Raspberry Pi behind Cloudflare Tunnel;
+Cloudflare Access gates both frontend and API — the backend must validate the
+`Cf-Access-Jwt-Assertion` JWT and never trust the bare email header. Local hosting
+in the interim — don't add cloud-specific config until that work starts.
+
+Planned v1.5 (DECISIONS.md #11): one-off task bounties paid from a separate bounty
+channel of the pool — tasks must never share machinery with the habit/week snapshot
+system, and the habit pool keeps the permanent majority of the money.
+
+This repo is one product on a future multi-app platform (DECISIONS.md #12): apps
+share infrastructure (Postgres server, tunnel, Access identity) but never code,
+databases, or processes — no cross-app coupling lands in this repo.
+
 ## Commands
 
 Backend (from `backend/`, venv in `.venv/`):
