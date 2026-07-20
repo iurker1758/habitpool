@@ -3,10 +3,13 @@ __pycache__/
 *.pyc
 .venv/
 .pytest_cache/
+.ruff_cache/
+*.egg-info/
 # node
 node_modules/
 dist/
 dev-dist/
+*.tsbuildinfo
 # env & editors
 .env
 .DS_Store

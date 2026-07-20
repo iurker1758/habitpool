@@ -44,8 +44,9 @@ up as requirements → choice → rejected alternatives.
 # backend
 cd backend
 python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost/habitpool
+pip install -e ".[dev]"
+cp .env.example .env   # then edit DATABASE_URL if yours differs
+alembic upgrade head
 uvicorn app.main:app --reload
 
 # frontend (second terminal)

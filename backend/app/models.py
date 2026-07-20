@@ -21,7 +21,7 @@ from .database import Base
 APP_TIMEZONE = "America/New_York"
 
 
-class HabitStatus(str, enum.Enum):
+class HabitStatus(enum.StrEnum):
     active = "active"        # in the money system
     graduated = "graduated"  # tracked, but earns nothing (deliberate ceremony)
     archived = "archived"    # hidden entirely
@@ -39,7 +39,7 @@ class Habit(Base):
     )
     created_at: Mapped[dt.datetime] = mapped_column(server_default=func.now())
 
-    checkoffs: Mapped[list["Checkoff"]] = relationship(back_populates="habit")
+    checkoffs: Mapped[list[Checkoff]] = relationship(back_populates="habit")
 
 
 class Checkoff(Base):
@@ -51,7 +51,7 @@ class Checkoff(Base):
     habit_id: Mapped[int] = mapped_column(ForeignKey("habits.id"))
     day: Mapped[dt.date] = mapped_column(Date)  # local date, not UTC timestamp
 
-    habit: Mapped["Habit"] = relationship(back_populates="checkoffs")
+    habit: Mapped[Habit] = relationship(back_populates="checkoffs")
 
 
 class Week(Base):
@@ -63,7 +63,7 @@ class Week(Base):
     start_day: Mapped[dt.date] = mapped_column(Date, unique=True)
     pool_cents: Mapped[int] = mapped_column(Integer, default=0)
 
-    habit_weeks: Mapped[list["HabitWeek"]] = relationship(back_populates="week")
+    habit_weeks: Mapped[list[HabitWeek]] = relationship(back_populates="week")
 
 
 class HabitWeek(Base):
@@ -82,4 +82,4 @@ class HabitWeek(Base):
     habit_id: Mapped[int] = mapped_column(ForeignKey("habits.id"))
     share_permille: Mapped[int] = mapped_column(Integer)
 
-    week: Mapped["Week"] = relationship(back_populates="habit_weeks")
+    week: Mapped[Week] = relationship(back_populates="habit_weeks")

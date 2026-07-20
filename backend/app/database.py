@@ -1,14 +1,10 @@
-"""Async engine + session dependency. DATABASE_URL env var wins; defaults to local Postgres."""
-import os
-
+"""Async engine + session dependency. URL comes from settings (env var / .env)."""
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
-DATABASE_URL = os.environ.get(
-    "DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost/habitpool"
-)
+from .config import settings
 
-engine = create_async_engine(DATABASE_URL, echo=False)
+engine = create_async_engine(settings.database_url, echo=False)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 

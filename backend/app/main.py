@@ -1,23 +1,21 @@
 """HabitPool API. Routes kept in one module for now; split into routers when it grows.
 
-Dev-only table creation on startup — switch to Alembic migrations before the
-schema stops being disposable.
+Schema is managed by Alembic — run `alembic upgrade head` before starting.
 """
 from __future__ import annotations
 
 import datetime as dt
-from contextlib import asynccontextmanager
 from zoneinfo import ZoneInfo
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from . import models, rewards
-from .database import Base, engine, get_session
+from . import rewards
+from .database import get_session
 from .models import APP_TIMEZONE, Checkoff, Habit, HabitStatus, HabitWeek, Week
 
 TZ = ZoneInfo(APP_TIMEZONE)
@@ -31,14 +29,7 @@ def week_start(day: dt.date) -> dt.date:
     return day - dt.timedelta(days=day.weekday())  # Monday
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)  # dev only; Alembic later
-    yield
-
-
-app = FastAPI(title="HabitPool", lifespan=lifespan)
+app = FastAPI(title="HabitPool")
 
 app.add_middleware(
     CORSMiddleware,
