@@ -18,12 +18,15 @@ export default function App() {
       setHabits(h.filter((x) => x.status !== "archived"));
       setWeek(w);
       setError(null);
-    } catch (e) {
+    } catch {
       setError("Can't reach the backend — is uvicorn running?");
     }
   }, []);
 
   useEffect(() => {
+    // False positive: refresh() only sets state after awaiting the fetch, but
+    // the rule can't see through the useCallback boundary.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
   }, [refresh]);
 
