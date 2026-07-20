@@ -21,6 +21,9 @@ dev = [
     "aiosqlite>=0.20",
     "httpx>=0.27",
     "ruff>=0.5",
+    # Pinned exact: pyright releases weekly and new versions add new errors;
+    # upgrades should be deliberate, not a surprise CI break.
+    "pyright==1.1.411",
 ]
 
 [build-system]
@@ -35,7 +38,9 @@ line-length = 96
 target-version = "py312"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B"]
+# DTZ and ASYNC enforce repo invariants (local-date math in APP_TIMEZONE; no
+# blocking calls in async paths); the rest are low-noise quality sets.
+select = ["E", "F", "I", "UP", "B", "SIM", "C4", "RUF", "PT", "DTZ", "ASYNC"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["app"]
@@ -46,6 +51,11 @@ extend-immutable-calls = ["fastapi.Depends"]
 [tool.ruff.lint.per-file-ignores]
 # Alembic autogenerates these; don't fight the generator's formatting.
 "alembic/versions/*" = ["E501", "I001"]
+
+[tool.pyright]
+include = ["app", "tests"]
+typeCheckingMode = "strict"
+pythonVersion = "3.12"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

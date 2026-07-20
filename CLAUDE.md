@@ -26,11 +26,13 @@ Backend (from `backend/`, venv in `.venv/`):
 - Config: `app/config.py` (pydantic-settings) — env vars override `.env` override defaults
 - Run: `uvicorn app.main:app --reload` (migrations must be applied first)
 - Migrations: `alembic upgrade head` · new: `alembic revision --autogenerate -m "..."`
-- Test: `pytest` · Lint: `ruff check .`
+- Test: `pytest` · Lint: `ruff check .` · Types: `pyright` (strict; run with the
+  venv active so it resolves site-packages)
 
 Frontend (from `frontend/`):
 
-- `npm run dev` (proxies `/api` to `:8000`) · `npm run build` (typechecks via `tsc -b`)
+- `npm run dev` (proxies `/api` to `:8000`) · `npm run build` (typechecks via
+  `tsc -b`) · `npm run lint` (ESLint incl. react-hooks rules)
 
 Docs: `npx markdownlint-cli2` from the repo root lints all Markdown (rules in
 `.markdownlint.jsonc`; CI runs it as the `docs` job).

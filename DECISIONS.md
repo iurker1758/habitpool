@@ -190,3 +190,28 @@ Keep adding entries as the build evolves. This file is the interview.
 - **Would change my mind:** two apps needing to share domain data (not just
   identity) — that's when the database-per-app boundary gets rethought; or a
   single product genuinely outgrowing one process.
+
+## 13. Static analysis: pyright strict, invariant-mapped ruff rules, ESLint
+
+- **Requirements:** the repo's core invariants are mechanical enough to enforce
+  by tooling — integer cents in money paths, local-date math in `APP_TIMEZONE`,
+  no blocking calls in async handlers, hooks discipline in a
+  learning-the-frontend React codebase. Tooling should be boring (#3's
+  innovation-token logic applies here too) and the editor must agree with CI.
+- **Choice:** pyright in strict mode over `app/` + `tests/` — viable because
+  SQLAlchemy 2.0's ORM and Pydantic v2 are natively typed and the codebase is
+  small; pinned exact since pyright releases weekly and new versions add new
+  errors. Ruff gains `DTZ` and `ASYNC` (each is an invariant as a lint rule)
+  plus low-noise quality sets `SIM`, `C4`, `RUF`, `PT`. Frontend: ESLint flat
+  config with typescript-eslint + react-hooks + react-refresh. All three run in
+  CI alongside the existing checks.
+- **Rejected:** mypy — equally sound, but pyright is what Pylance already runs
+  in VS Code, so editor and CI can't drift. pyrefly (Meta) and ty (Astral) —
+  promising Rust checkers, still pre-1.0; their differentiator is
+  monorepo-scale speed, worth nothing at 500 lines, while maturity and
+  ecosystem recognition are worth a lot. pylint — near-fully duplicated by
+  ruff. Prettier — deferred until formatting inconsistency actually hurts.
+- **Would change my mind:** ty hitting stable with ruff-level polish (one
+  Astral toolchain is appealing — revisit then); or strict mode generating
+  sustained ignore-comment noise as real app code grows — drop to standard
+  mode rather than normalize suppressions.

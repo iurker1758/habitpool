@@ -36,7 +36,7 @@ def test_single_habit_takes_whole_pool():
 
 
 def test_zero_total_weight_rejected():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="must sum to a positive value"):
         pool_shares({1: 0.0})
 
 
@@ -48,7 +48,7 @@ def test_perfect_week_unlocks_whole_pool_with_bonuses():
         10_000,
         shares,
         {1: 7, 2: 7, 3: 7},
-        {h: STREAK_BONUS_PERMILLE for h in shares},
+        dict.fromkeys(shares, STREAK_BONUS_PERMILLE),
     )
     assert cents == 10_000  # capped at pool
 
@@ -115,7 +115,8 @@ def test_perfect_week_earns_bonus_without_skips():
 @pytest.mark.skip(reason="TODO(you): implement week_streak_result")
 def test_one_miss_spends_skip_token_and_keeps_bonus():
     r = week_streak_result(set(WEEK[:3] + WEEK[4:]), WEEK)
-    assert r.streak_intact and r.skips_used == 1
+    assert r.streak_intact
+    assert r.skips_used == 1
     assert r.bonus_permille == STREAK_BONUS_PERMILLE
 
 
