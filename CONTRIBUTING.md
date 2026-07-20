@@ -13,7 +13,7 @@ Work on short-lived branches named `<type>/<short-slug>`, e.g. `feat/streak-bonu
 
 [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/):
 
-```
+```text
 <type>(<scope>): <imperative summary, lowercase, no period>
 
 Optional body: what and why, not how. Wrap at ~72 chars.
@@ -27,7 +27,9 @@ Optional body: what and why, not how. Wrap at ~72 chars.
 
 - Title in Conventional Commit format — squash-merge uses it as the commit title
   and the PR body as the commit message, so write both for the git log.
-- CI (`backend`, `frontend`) must be green; enable auto-merge instead of waiting.
+- CI (`backend`, `frontend`, `docs`) must be green; enable auto-merge instead of
+  waiting. `docs` lints Markdown — run `npx markdownlint-cli2` locally to check
+  (rules in `.markdownlint.jsonc`, or use the VS Code markdownlint extension).
 - A PR that makes a non-obvious technical choice updates `DECISIONS.md` in the
   same PR (Requirements → Choice → Rejected → What would change my mind).
 
