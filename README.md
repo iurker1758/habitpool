@@ -1,8 +1,7 @@
 # HabitPool
 
-*(working name — rename freely)*
-
-A habit-formation PWA where completing daily habits unlocks a percentage of your
+HabitPool *(working name — rename freely)* is a habit-formation PWA where
+completing daily habits unlocks a percentage of your
 paycheck's "fun money" pool. Grounded in behavioral psychology: temptation
 bundling, immediate reward feedback, streaks with slack, and reinforcement-schedule
 thinning that automatically shifts reward weight toward the habits that still

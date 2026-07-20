@@ -32,6 +32,9 @@ Frontend (from `frontend/`):
 
 - `npm run dev` (proxies `/api` to `:8000`) · `npm run build` (typechecks via `tsc -b`)
 
+Docs: `npx markdownlint-cli2` from the repo root lints all Markdown (rules in
+`.markdownlint.jsonc`; CI runs it as the `docs` job).
+
 ## Invariants — do not break
 
 - Money is integer cents; pool shares are integer permille. Never floats in stored money.
