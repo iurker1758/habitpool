@@ -1,0 +1,14 @@
+/* Minimal legibility only — the real design pass is its own step. */
+:root { color-scheme: dark; }
+body { margin: 0; font-family: system-ui, sans-serif; background: #101418; color: #e8e8e8; }
+.app { max-width: 480px; margin: 0 auto; padding: 1.25rem; }
+.pool { text-align: center; margin: 1.5rem 0; }
+.unlocked { font-size: 3rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.pool-label { opacity: 0.7; margin-bottom: 0.5rem; }
+progress { width: 100%; height: 0.6rem; }
+.habits { list-style: none; padding: 0; }
+.habits li { margin: 0.25rem 0; }
+.habits label { display: flex; gap: 0.75rem; align-items: center; padding: 0.9rem; background: #1a2027; border-radius: 10px; cursor: pointer; }
+.habits input { width: 1.4rem; height: 1.4rem; } /* thumb-sized tap targets */
+.cue { display: block; font-size: 0.85rem; opacity: 0.6; font-style: normal; }
+.error { color: #ff8a80; }
