@@ -106,19 +106,17 @@ def test_exactly_threshold_completion_tapers():
     ) == WEIGHT_FLOOR
 
 
-# ---------- week_streak_result (YOUR TDD BACKLOG) ----------
+# ---------- week_streak_result ----------
 
 WEEK = [dt.date(2026, 7, 20) + dt.timedelta(days=i) for i in range(7)]  # Mon-Sun
 
 
-@pytest.mark.skip(reason="TODO(you): implement week_streak_result")
 def test_perfect_week_earns_bonus_without_skips():
     r = week_streak_result(set(WEEK), WEEK)
     assert r == StreakResult(streak_intact=True, skips_used=0,
                              bonus_permille=STREAK_BONUS_PERMILLE)
 
 
-@pytest.mark.skip(reason="TODO(you): implement week_streak_result")
 def test_one_miss_spends_skip_token_and_keeps_bonus():
     r = week_streak_result(set(WEEK[:3] + WEEK[4:]), WEEK)
     assert r.streak_intact
@@ -126,8 +124,39 @@ def test_one_miss_spends_skip_token_and_keeps_bonus():
     assert r.bonus_permille == STREAK_BONUS_PERMILLE
 
 
-@pytest.mark.skip(reason="TODO(you): implement week_streak_result")
 def test_two_misses_break_the_streak():
     r = week_streak_result(set(WEEK[2:]), WEEK)
     assert not r.streak_intact
     assert r.bonus_permille == 0
+    assert r.skips_used == 1  # the one token is spent even though it wasn't enough
+
+
+def test_future_days_do_not_count_as_misses():
+    # Wednesday of a Mon-start week: 3 judgeable days, all checked
+    r = week_streak_result(set(WEEK[:3]), WEEK, today=WEEK[2])
+    assert r == StreakResult(streak_intact=True, skips_used=0, bonus_permille=0)
+
+
+def test_midweek_miss_spends_token_but_no_bonus_yet():
+    # checked Mon + Wed, missed Tue, judged on Wed -> alive via token, no bonus
+    r = week_streak_result({WEEK[0], WEEK[2]}, WEEK, today=WEEK[2])
+    assert r == StreakResult(streak_intact=True, skips_used=1, bonus_permille=0)
+
+
+def test_midweek_two_misses_break_the_streak():
+    # only Wed checked by Wed -> Mon and Tue are both misses
+    r = week_streak_result({WEEK[2]}, WEEK, today=WEEK[2])
+    assert not r.streak_intact
+    assert r.bonus_permille == 0
+
+
+def test_today_on_last_day_completes_the_week():
+    # today == Sunday judges all 7 days: bonus is awarded, same as today=None
+    r = week_streak_result(set(WEEK), WEEK, today=WEEK[6])
+    assert r.bonus_permille == STREAK_BONUS_PERMILLE
+
+
+def test_today_before_week_start_judges_nothing():
+    # rollover edge: a not-yet-started week has no judgeable days and no bonus
+    r = week_streak_result(set(), WEEK, today=WEEK[0] - dt.timedelta(days=1))
+    assert r == StreakResult(streak_intact=True, skips_used=0, bonus_permille=0)

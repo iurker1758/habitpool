@@ -9,9 +9,8 @@ Model recap (see README / DECISIONS.md):
 - Weights taper only when a habit is BOTH old enough and consistently done —
   reinforcement-schedule thinning.
 
-Implemented: weights -> shares, unlock accumulation, habit_weight().
-Your TDD backlog (tests exist in tests/test_rewards.py, currently skipped):
-  - week_streak_result(): streak + skip-token logic
+Implemented: weights -> shares, unlock accumulation, habit_weight(),
+week_streak_result(). (The TDD backlog is complete.)
 """
 from __future__ import annotations
 
@@ -91,18 +90,29 @@ class StreakResult:
     bonus_permille: int
 
 
-def week_streak_result(checkoff_days: set[date], week_days: list[date]) -> StreakResult:
+def week_streak_result(
+    checkoff_days: set[date], week_days: list[date], today: date | None = None
+) -> StreakResult:
     """Streak + skip-token logic for one habit over one week.
 
-    Spec (implement me):
-    - 7/7 days checked -> intact, 0 skips, STREAK_BONUS_PERMILLE.
-    - 6/7 -> intact via one skip token, bonus still awarded (slack by design:
-      avoids the what-the-hell effect).
-    - <= 5/7 -> streak broken, no bonus, skips_used reports tokens spent (max
-      SKIP_TOKENS_PER_WEEK).
-    - Days in the future (relative to max(week_days) actually elapsed) must not
-      count against the streak — a Wednesday check of a Mon-start week has only
-      3 judgeable days. Signature may need the 'today' date; adjust it and the
-      tests when you implement.
+    - Only days elapsed (day <= today) are judgeable; future days never count
+      against the streak — a Wednesday check of a Mon-start week has only 3
+      judgeable days. today=None means the whole week has elapsed. The caller
+      passes today explicitly (a local APP_TIMEZONE date) — no clock read
+      here, this module stays pure. See DECISIONS.md #15.
+    - Misses among judgeable days spend skip tokens (slack by design: avoids
+      the what-the-hell effect); the streak is intact while misses <=
+      SKIP_TOKENS_PER_WEEK. skips_used reports tokens spent, capped at
+      SKIP_TOKENS_PER_WEEK even when the streak is already broken.
+    - The bonus is awarded exactly once, when the week is fully judgeable and
+      the streak held — never provisionally mid-week.
     """
-    raise NotImplementedError("your TDD backlog — see tests/test_rewards.py")
+    judgeable = week_days if today is None else [d for d in week_days if d <= today]
+    misses = sum(1 for d in judgeable if d not in checkoff_days)
+    intact = misses <= SKIP_TOKENS_PER_WEEK
+    week_complete = len(judgeable) == len(week_days)
+    return StreakResult(
+        streak_intact=intact,
+        skips_used=min(misses, SKIP_TOKENS_PER_WEEK),
+        bonus_permille=STREAK_BONUS_PERMILLE if intact and week_complete else 0,
+    )
