@@ -69,28 +69,21 @@ def test_more_than_seven_days_is_clamped():
     assert unlocked_cents(7_000, shares, {1: 99}) == 7_000
 
 
-# ---------- habit_weight (YOUR TDD BACKLOG) ----------
+# ---------- habit_weight ----------
 
-pytestmark_weight = pytest.mark.skip(reason="TODO(you): implement habit_weight")
-
-
-@pytest.mark.skip(reason="TODO(you): implement habit_weight")
 def test_new_habit_has_full_weight_even_when_nailed():
     assert habit_weight(weeks_active=2, trailing_completion=1.0) == 1.0
 
 
-@pytest.mark.skip(reason="TODO(you): implement habit_weight")
 def test_old_nailed_habit_reaches_floor():
     assert habit_weight(weeks_active=20, trailing_completion=0.95) == WEIGHT_FLOOR
 
 
-@pytest.mark.skip(reason="TODO(you): implement habit_weight")
 def test_struggling_habit_does_not_taper():
     # below the ingrained threshold -> no taper, regardless of age
     assert habit_weight(weeks_active=20, trailing_completion=0.5) == 1.0
 
 
-@pytest.mark.skip(reason="TODO(you): implement habit_weight")
 def test_taper_is_monotonic_and_bounded():
     prev = 1.0
     for weeks in range(0, 30):
