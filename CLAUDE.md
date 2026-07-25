@@ -54,5 +54,6 @@ Docs: `npx markdownlint-cli2` from the repo root lints all Markdown (rules in
 - Branches: `<type>/<short-slug>`, e.g. `feat/streak-bonus`.
 - Every non-obvious tech/design choice gets a `DECISIONS.md` entry:
   Requirements → Choice → Alternatives rejected → What would change my mind.
-- The skipped tests in `test_rewards.py` (`habit_weight`, `week_streak_result`) are the
-  owner's TDD backlog — do not implement them unless explicitly asked.
+- The skipped tests in `test_rewards.py` (`week_streak_result`) are the owner's
+  TDD backlog — do not implement them unless explicitly asked. (`habit_weight`
+  was implemented on request in PR #17.)

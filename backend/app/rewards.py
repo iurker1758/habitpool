@@ -71,9 +71,11 @@ def habit_weight(weeks_active: int, trailing_completion: float) -> float:
     - weeks_active < FULL_WEIGHT_WEEKS  -> 1.0 regardless of completion.
     - Taper only while trailing_completion >= INGRAINED_THRESHOLD
       (reinforcement-schedule thinning applies to habits being nailed, not
-      habits being rebuilt). v1 treats weeks_active as qualifying weeks; a
-      qualifying_weeks parameter is the v2 refinement if held-position
-      precision is ever wanted.
+      habits being rebuilt). NOTE: below the threshold the weight rebounds to
+      1.0 — v1 does not hold the tapered position, so the curve is monotonic
+      only at sustained-high completion. v1 also treats weeks_active as
+      qualifying weeks; a qualifying_weeks parameter is the v2 refinement if
+      held-position precision is ever wanted. See DECISIONS.md #14.
     - Linear glide from 1.0 down to WEIGHT_FLOOR across TAPER_WEEKS.
     """
     if weeks_active < FULL_WEIGHT_WEEKS or trailing_completion < INGRAINED_THRESHOLD:
