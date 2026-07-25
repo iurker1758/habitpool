@@ -8,6 +8,7 @@ import datetime as dt
 import pytest
 
 from app.rewards import (
+    INGRAINED_THRESHOLD,
     STREAK_BONUS_PERMILLE,
     WEIGHT_FLOOR,
     StreakResult,
@@ -69,28 +70,21 @@ def test_more_than_seven_days_is_clamped():
     assert unlocked_cents(7_000, shares, {1: 99}) == 7_000
 
 
-# ---------- habit_weight (YOUR TDD BACKLOG) ----------
+# ---------- habit_weight ----------
 
-pytestmark_weight = pytest.mark.skip(reason="TODO(you): implement habit_weight")
-
-
-@pytest.mark.skip(reason="TODO(you): implement habit_weight")
 def test_new_habit_has_full_weight_even_when_nailed():
     assert habit_weight(weeks_active=2, trailing_completion=1.0) == 1.0
 
 
-@pytest.mark.skip(reason="TODO(you): implement habit_weight")
 def test_old_nailed_habit_reaches_floor():
     assert habit_weight(weeks_active=20, trailing_completion=0.95) == WEIGHT_FLOOR
 
 
-@pytest.mark.skip(reason="TODO(you): implement habit_weight")
 def test_struggling_habit_does_not_taper():
     # below the ingrained threshold -> no taper, regardless of age
     assert habit_weight(weeks_active=20, trailing_completion=0.5) == 1.0
 
 
-@pytest.mark.skip(reason="TODO(you): implement habit_weight")
 def test_taper_is_monotonic_and_bounded():
     prev = 1.0
     for weeks in range(0, 30):
@@ -98,6 +92,18 @@ def test_taper_is_monotonic_and_bounded():
         assert WEIGHT_FLOOR <= w <= 1.0
         assert w <= prev
         prev = w
+
+
+def test_glide_is_linear_at_midpoint():
+    # 4 of 8 taper weeks elapsed -> exactly halfway from 1.0 to the floor
+    assert habit_weight(weeks_active=8, trailing_completion=0.9) == 0.625
+
+
+def test_exactly_threshold_completion_tapers():
+    # >= is inclusive: a habit at exactly the ingrained threshold tapers
+    assert habit_weight(
+        weeks_active=20, trailing_completion=INGRAINED_THRESHOLD
+    ) == WEIGHT_FLOOR
 
 
 # ---------- week_streak_result (YOUR TDD BACKLOG) ----------

@@ -215,3 +215,27 @@ Keep adding entries as the build evolves. This file is the interview.
   Astral toolchain is appealing — revisit then); or strict mode generating
   sustained ignore-comment noise as real app code grows — drop to standard
   mode rather than normalize suppressions.
+
+## 14. habit_weight v1: current-completion gate, calendar-age taper
+
+- **Requirements:** `habit_weight()` must stay a pure function of inputs
+  derivable from a simple query (rewards.py purity invariant); the taper
+  should thin rewards only for habits being nailed; nothing may disturb
+  frozen past weeks (#5).
+- **Choice:** gate the taper on the *current* trailing completion and count
+  taper progress from raw calendar age (`weeks_active`). Two accepted
+  consequences: a tapered habit that slips below the 80% threshold rebounds
+  to full weight (the struggling habit gets its incentive back), and a
+  long-struggling habit that recovers resumes the glide as if the sloppy
+  stretch had counted (cushioned by the 0.25 floor). The exact-threshold
+  boundary is inclusive: completion == 0.8 tapers.
+- **Rejected:** an accumulated `qualifying_weeks` counter (hold the tapered
+  position, never rebound) — that precision requires persisted state: a
+  schema column, an Alembic migration, and rollover write logic, all for a
+  divergence that only matters when a mature habit oscillates around the
+  threshold. It stays cheap to adopt later: adding a parameter is additive,
+  and frozen past weeks (#5) are untouched either way.
+- **Would change my mind:** real usage showing threshold-hovering habits
+  gaming pool shares (deliberate dips under 80% to re-inflate weight), or
+  the snap-to-floor on freshly recovered habits feeling unfair in practice —
+  both observable only once rollover wiring (issue #3) lands.

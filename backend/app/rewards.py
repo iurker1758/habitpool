@@ -9,9 +9,8 @@ Model recap (see README / DECISIONS.md):
 - Weights taper only when a habit is BOTH old enough and consistently done —
   reinforcement-schedule thinning.
 
-Implemented: weights -> shares, unlock accumulation.
+Implemented: weights -> shares, unlock accumulation, habit_weight().
 Your TDD backlog (tests exist in tests/test_rewards.py, currently skipped):
-  - habit_weight(): the maturity curve
   - week_streak_result(): streak + skip-token logic
 """
 from __future__ import annotations
@@ -69,19 +68,20 @@ def unlocked_cents(
 def habit_weight(weeks_active: int, trailing_completion: float) -> float:
     """Maturity-tapered weight in [WEIGHT_FLOOR, 1.0].
 
-    Spec (implement me — tests in test_rewards.py encode this):
     - weeks_active < FULL_WEIGHT_WEEKS  -> 1.0 regardless of completion.
-    - Taper only while trailing_completion >= INGRAINED_THRESHOLD; a habit that
-      slips below the threshold holds its current position, it does not taper
-      further (but also does not bounce back up — monotonic non-increasing is
-      fine for v1; simplest correct approach: taper progress is
-      min(weeks_active - FULL_WEIGHT_WEEKS, TAPER_WEEKS) counted only when
-      completion qualifies — pass qualifying_weeks in v2 if you want that
-      precision; for v1 the tests treat weeks_active as qualifying weeks).
-    - Linear glide: 1.0 down to WEIGHT_FLOOR across TAPER_WEEKS.
-    - Never below WEIGHT_FLOOR.
+    - Taper only while trailing_completion >= INGRAINED_THRESHOLD
+      (reinforcement-schedule thinning applies to habits being nailed, not
+      habits being rebuilt). NOTE: below the threshold the weight rebounds to
+      1.0 — v1 does not hold the tapered position, so the curve is monotonic
+      only at sustained-high completion. v1 also treats weeks_active as
+      qualifying weeks; a qualifying_weeks parameter is the v2 refinement if
+      held-position precision is ever wanted. See DECISIONS.md #14.
+    - Linear glide from 1.0 down to WEIGHT_FLOOR across TAPER_WEEKS.
     """
-    raise NotImplementedError("your TDD backlog — see tests/test_rewards.py")
+    if weeks_active < FULL_WEIGHT_WEEKS or trailing_completion < INGRAINED_THRESHOLD:
+        return 1.0
+    taper_progress = min(weeks_active - FULL_WEIGHT_WEEKS, TAPER_WEEKS)
+    return 1.0 - (1.0 - WEIGHT_FLOOR) * taper_progress / TAPER_WEEKS
 
 
 @dataclass(frozen=True)
