@@ -246,18 +246,27 @@ Keep adding entries as the build evolves. This file is the interview.
   DTZ lint bans naive `date.today()` anyway); mid-week evaluation must not
   count unelapsed days as misses; the streak bonus must land exactly once
   per week; all day math stays in local `APP_TIMEZONE` dates (#8).
-- **Choice:** an explicit `today: date | None = None` parameter. Only days
-  `<= today` are judgeable (`None` = whole week elapsed, which keeps the
-  original two-arg tests valid). The streak is intact while misses among
-  judgeable days fit within `SKIP_TOKENS_PER_WEEK`; `skips_used` reports
-  tokens provisionally spent mid-week, capped at the token budget even once
-  broken. The bonus is awarded only when the week is fully judgeable and the
-  streak held — mid-week the function reports "alive" but never pays.
+- **Choice:** a required keyword-only `today: date | None` parameter (`None`
+  = week fully elapsed, for historical weeks) — required so the obvious
+  mid-week caller can't silently fall into whole-week judging; a `datetime`
+  is rejected at runtime since it type-checks as a `date` but breaks date
+  comparison. A day is judgeable once fully elapsed (`day < today`) or when
+  it is today and already checked off — a done day can't become undone, so
+  early counting only ever helps; an unfinished today is never a miss. The
+  streak is intact while misses among judgeable days fit within
+  `SKIP_TOKENS_PER_WEEK`; `skips_used` reports tokens provisionally spent
+  mid-week, capped at the token budget even once broken. The bonus pays only
+  when every expected day is judgeable and the streak held. `week_days` is
+  the habit's *expected* days — callers pass only days the habit was active
+  (a Thursday-created habit gets Thu–Sun), and an empty list earns nothing.
 - **Rejected:** reading the clock inside the function — impure, untestable,
-  and wrong timezone semantics for free; awarding the bonus provisionally
-  mid-week — the caller would double-count it at rollover or need
-  reconciliation logic; a separate mid-week status function — two code paths
-  for one concept drift apart.
+  and wrong timezone semantics for free; judging `day <= today`
+  unconditionally — counts an as-yet-unfinished today as a miss, and on
+  Sunday finalizes a wrong zero bonus from incomplete data; a defaulted
+  `today=None` — makes wrong mid-week behavior the path of least
+  resistance; awarding the bonus provisionally mid-week — the caller would
+  double-count it at rollover or need reconciliation logic; a separate
+  mid-week status function — two code paths for one concept drift apart.
 - **Would change my mind:** if the week-summary UI (issue #4) wants to show
   a provisional "bonus on track" indicator, add a distinct field to
   StreakResult rather than overloading bonus_permille.

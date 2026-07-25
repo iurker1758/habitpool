@@ -165,7 +165,7 @@ async def current_week(session: AsyncSession = Depends(get_session)):
         by_habit.setdefault(c.habit_id, []).append(c.day)
 
     counts = {hid: len(days) for hid, days in by_habit.items()}
-    # TODO: streak bonuses once week_streak_result() is implemented
+    # TODO(issue #4): wire rewards.week_streak_result() bonuses into the summary
     unlocked = rewards.unlocked_cents(week.pool_cents, shares, counts)
     return WeekSummary(
         start_day=week.start_day,

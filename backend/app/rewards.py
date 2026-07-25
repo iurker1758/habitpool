@@ -15,7 +15,7 @@ week_streak_result(). (The TDD backlog is complete.)
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 
 WEIGHT_FLOOR = 0.25       # ingrained habits never taper below this (keep the tick alive)
 FULL_WEIGHT_WEEKS = 4     # no taper before this age
@@ -91,23 +91,36 @@ class StreakResult:
 
 
 def week_streak_result(
-    checkoff_days: set[date], week_days: list[date], today: date | None = None
+    checkoff_days: set[date], week_days: list[date], *, today: date | None
 ) -> StreakResult:
     """Streak + skip-token logic for one habit over one week.
 
-    - Only days elapsed (day <= today) are judgeable; future days never count
-      against the streak — a Wednesday check of a Mon-start week has only 3
-      judgeable days. today=None means the whole week has elapsed. The caller
-      passes today explicitly (a local APP_TIMEZONE date) — no clock read
-      here, this module stays pure. See DECISIONS.md #15.
+    - week_days is the list of days the habit was EXPECTED: callers pass only
+      days the habit was active (a habit created Thursday gets Thu-Sun, not
+      the full week), and an empty list earns nothing.
+    - today is required (keyword-only, so a mid-week caller can't silently
+      fall into whole-week judging) and must be a local APP_TIMEZONE date —
+      no clock read here, this module stays pure. today=None means the week
+      has fully elapsed (historical weeks). See DECISIONS.md #15.
+    - A day is judgeable once it has fully elapsed (day < today), or if it is
+      today and already checked off — a done day can't become undone, so
+      counting it early can only ever help. An unfinished today is never a
+      miss; future days never count against the streak.
     - Misses among judgeable days spend skip tokens (slack by design: avoids
       the what-the-hell effect); the streak is intact while misses <=
       SKIP_TOKENS_PER_WEEK. skips_used reports tokens spent, capped at
       SKIP_TOKENS_PER_WEEK even when the streak is already broken.
-    - The bonus is awarded exactly once, when the week is fully judgeable and
-      the streak held — never provisionally mid-week.
+    - The bonus is awarded only once every expected day is judgeable and the
+      streak held — never from incomplete data.
     """
-    judgeable = week_days if today is None else [d for d in week_days if d <= today]
+    if isinstance(today, datetime):
+        raise TypeError("today must be a local date, not a datetime")
+    if not week_days:
+        return StreakResult(streak_intact=True, skips_used=0, bonus_permille=0)
+    judgeable = [
+        d for d in week_days
+        if today is None or d < today or (d == today and d in checkoff_days)
+    ]
     misses = sum(1 for d in judgeable if d not in checkoff_days)
     intact = misses <= SKIP_TOKENS_PER_WEEK
     week_complete = len(judgeable) == len(week_days)
