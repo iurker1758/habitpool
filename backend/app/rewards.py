@@ -9,14 +9,13 @@ Model recap (see README / DECISIONS.md):
 - Weights taper only when a habit is BOTH old enough and consistently done —
   reinforcement-schedule thinning.
 
-Implemented: weights -> shares, unlock accumulation, habit_weight().
-Your TDD backlog (tests exist in tests/test_rewards.py, currently skipped):
-  - week_streak_result(): streak + skip-token logic
+Implemented: weights -> shares, unlock accumulation, habit_weight(),
+week_streak_result(). (The TDD backlog is complete.)
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 
 WEIGHT_FLOOR = 0.25       # ingrained habits never taper below this (keep the tick alive)
 FULL_WEIGHT_WEEKS = 4     # no taper before this age
@@ -91,18 +90,42 @@ class StreakResult:
     bonus_permille: int
 
 
-def week_streak_result(checkoff_days: set[date], week_days: list[date]) -> StreakResult:
+def week_streak_result(
+    checkoff_days: set[date], week_days: list[date], *, today: date | None
+) -> StreakResult:
     """Streak + skip-token logic for one habit over one week.
 
-    Spec (implement me):
-    - 7/7 days checked -> intact, 0 skips, STREAK_BONUS_PERMILLE.
-    - 6/7 -> intact via one skip token, bonus still awarded (slack by design:
-      avoids the what-the-hell effect).
-    - <= 5/7 -> streak broken, no bonus, skips_used reports tokens spent (max
-      SKIP_TOKENS_PER_WEEK).
-    - Days in the future (relative to max(week_days) actually elapsed) must not
-      count against the streak — a Wednesday check of a Mon-start week has only
-      3 judgeable days. Signature may need the 'today' date; adjust it and the
-      tests when you implement.
+    - week_days is the list of days the habit was EXPECTED: callers pass only
+      days the habit was active (a habit created Thursday gets Thu-Sun, not
+      the full week), and an empty list earns nothing.
+    - today is required (keyword-only, so a mid-week caller can't silently
+      fall into whole-week judging) and must be a local APP_TIMEZONE date —
+      no clock read here, this module stays pure. today=None means the week
+      has fully elapsed (historical weeks). See DECISIONS.md #15.
+    - A day is judgeable once it has fully elapsed (day < today), or if it is
+      today and already checked off — a done day can't become undone, so
+      counting it early can only ever help. An unfinished today is never a
+      miss; future days never count against the streak.
+    - Misses among judgeable days spend skip tokens (slack by design: avoids
+      the what-the-hell effect); the streak is intact while misses <=
+      SKIP_TOKENS_PER_WEEK. skips_used reports tokens spent, capped at
+      SKIP_TOKENS_PER_WEEK even when the streak is already broken.
+    - The bonus is awarded only once every expected day is judgeable and the
+      streak held — never from incomplete data.
     """
-    raise NotImplementedError("your TDD backlog — see tests/test_rewards.py")
+    if isinstance(today, datetime):
+        raise TypeError("today must be a local date, not a datetime")
+    if not week_days:
+        return StreakResult(streak_intact=True, skips_used=0, bonus_permille=0)
+    judgeable = [
+        d for d in week_days
+        if today is None or d < today or (d == today and d in checkoff_days)
+    ]
+    misses = sum(1 for d in judgeable if d not in checkoff_days)
+    intact = misses <= SKIP_TOKENS_PER_WEEK
+    week_complete = len(judgeable) == len(week_days)
+    return StreakResult(
+        streak_intact=intact,
+        skips_used=min(misses, SKIP_TOKENS_PER_WEEK),
+        bonus_permille=STREAK_BONUS_PERMILLE if intact and week_complete else 0,
+    )
