@@ -93,22 +93,33 @@ Keep adding entries as the build evolves. This file is the interview.
 - **Rejected:** UTC everywhere — correct for servers, wrong for humans whose
   habits happen at local bedtime.
 
-## 9. Hosting: Cloudflare frontend + Raspberry Pi backend (planned; local for now)
+## 9. Hosting: Cloudflare frontend + home-server backend (platform live; this app local for now)
 
 - **Requirements:** near-zero recurring cost; a real domain I own, with the app on
   a subdomain; PWA assets delivered fast with free TLS; single user for now, so
   backend uptime is a personal concern, not a customer one.
-- **Choice:** frontend as a static PWA on Cloudflare under a subdomain of a
-  purchased domain; backend + Postgres self-hosted on a Raspberry Pi, exposed via
+- **Choice:** frontend as a static PWA on Cloudflare Pages under a subdomain of a
+  purchased domain; backend + Postgres self-hosted on a home server, exposed via
   Cloudflare Tunnel (origin binds to localhost only — the tunnel is the sole way
   in). Interim: everything runs locally.
 - **Rejected:** managed PaaS for the backend (Render/Fly/Railway) — recurring cost
-  for a single-user app; serving the frontend from the Pi too — loses edge
-  delivery and couples the web app's availability to home internet.
-- **Would change my mind:** real multi-user traffic, or the Pi's ops burden
-  (updates, backups, SD-card mortality) outweighing the hobby value.
+  for a single-user app; serving the frontend from the home server too — loses
+  edge delivery and couples the web app's availability to home internet.
+- **Would change my mind:** real multi-user traffic, or the home server's ops
+  burden (updates, backups, hardware mortality) outweighing the hobby value.
 - **Note:** this triggered the mind-changer recorded in #2 — resolved by amending
   #2: keeping Postgres (marketability + planned multi-user, see #10).
+- **Update (2026-08-20):** the platform exists, built and proven by the sibling
+  app umalab (its DECISIONS #53–#56). What changed from the plan above: the
+  server is a mini PC, not a Raspberry Pi (the SD-card worry is gone; the rest
+  of the ops argument stands); the frontend is on Cloudflare Pages with a
+  custom domain; the deployed SPA reaches the API through a same-origin Pages
+  Function proxy (`/api/*` rewritten to the tunnel hostname via a Pages env
+  var) rather than a separate API hostname with CORS; backend deploys are a
+  server-side cron poll that pulls `main` only when the tip's CI check runs
+  are green. Hostnames and env vars live in the Cloudflare dashboard and the
+  server's `.env`, never in the repo. HabitPool adopts the same shape when it
+  deploys; until then it stays local.
 
 ## 10. Auth: Cloudflare Access instead of building login
 
@@ -129,6 +140,20 @@ Keep adding entries as the build evolves. This file is the interview.
 - **Would change my mind:** public signup beyond ~50 users, native mobile
   clients that can't ride a browser SSO flow, or deciding that hand-rolled auth
   itself is a skill worth demonstrating in this portfolio.
+- **Update (2026-08-20):** reaffirmed. The sibling app umalab replaced Access
+  with its own Discord OAuth login (its DECISIONS #58) because its invite list
+  is a Discord guild role; that is a umalab-only choice. HabitPool's users are
+  a short email allow-list, which is exactly what an Access policy is, so this
+  entry stands unchanged: Access in front of both the Pages site and the API,
+  `Cf-Access-Jwt-Assertion` verified by the backend, bare email header never
+  trusted. One consequence for #12: "one Access identity across every app" no
+  longer holds platform-wide — each app owns its login, and the shared layer
+  is the Cloudflare zone, tunnel and Postgres server, not identity. Two things
+  umalab measured under Access that apply here at deploy time: the same-origin
+  proxy (#9 update) carries the Access JWT through to the backend untouched,
+  and a PWA service worker must exclude `/api/` and `/cdn-cgi/` from its
+  navigation fallback or the Access login callback gets swallowed by the
+  cached shell.
 
 ## 11. One-off task bounties (planned v1.5)
 
@@ -166,7 +191,7 @@ Keep adding entries as the build evolves. This file is the interview.
 ## 12. Multi-app future: separate products, shared infrastructure
 
 - **Requirements:** more personal apps are coming (recipe tracker, etc.) and will
-  live on the same Pi + Cloudflare setup (#9–10); personal projects get
+  live on the same home server + Cloudflare setup (#9–10); personal projects get
   abandoned, rewritten, and resurrected on independent schedules; each repo
   should stay a clean, self-contained portfolio piece.
 - **Choice:** coupling boundaries follow lifecycle boundaries. Each product is
@@ -190,6 +215,18 @@ Keep adding entries as the build evolves. This file is the interview.
 - **Would change my mind:** two apps needing to share domain data (not just
   identity) — that's when the database-per-app boundary gets rethought; or a
   single product genuinely outgrowing one process.
+- **Update (2026-08-20):** the first app on the platform (umalab) shipped on
+  this shape — own repo, process, database, and a plain systemd unit on the
+  mini PC (#9 update). Two premises above did not survive it. Identity is not
+  shared: umalab logs in through its own Discord OAuth (its DECISIONS #58)
+  while HabitPool keeps Cloudflare Access (#10), so "one Access identity,
+  zero shared auth code" is now "each app owns its login" — the shared layer
+  is the Cloudflare zone, the tunnel, and the Postgres server. And the
+  Access-JWT helper is no longer the candidate for a rule-of-three
+  extraction, since only this app will have one; the rule itself stands, with
+  no candidate yet. The compose infra repo remains deferred: umalab deployed
+  alone on systemd, and the call comes due when HabitPool — app two — is
+  deployed.
 
 ## 13. Static analysis: pyright strict, invariant-mapped ruff rules, ESLint
 
