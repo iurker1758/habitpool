@@ -12,3 +12,12 @@ progress { width: 100%; height: 0.6rem; }
 .habits input { width: 1.4rem; height: 1.4rem; } /* thumb-sized tap targets */
 .cue { display: block; font-size: 0.85rem; opacity: 0.6; font-style: normal; }
 .error { color: #ff8a80; }
+
+/* Centered over everything; nothing behind it is usable until re-auth. */
+.session-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; padding: 1rem; z-index: 25; }
+.session-dialog { background: #141a21; border: 1px solid #2a3340; border-radius: 12px; padding: 1.25rem 1.5rem; max-width: 420px; }
+.session-dialog h2 { margin: 0 0 0.5rem; }
+.session-dialog p { margin: 0.4rem 0; opacity: 0.85; font-size: 0.95rem; }
+.session-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
+.session-actions a, .session-actions button { display: inline-block; text-decoration: none; padding: 0.6rem 1rem; border: 0; border-radius: 8px; background: #3b82f6; color: #fff; font-size: 1rem; cursor: pointer; }
+.session-actions .session-retry { background: #232b34; }

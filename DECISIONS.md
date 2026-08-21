@@ -322,3 +322,35 @@ Keep adding entries as the build evolves. This file is the interview.
 - **Would change my mind:** if the week-summary UI (issue #4) wants to show
   a provisional "bonus on track" indicator, add a distinct field to
   StreakResult rather than overloading bonus_permille.
+
+## 16. An expired Access session latches an overlay; re-auth happens in a new tab
+
+- **Requirements:** issue #23 — when the Access session lapses, the edge
+  answers every `/api` fetch with a login redirect `fetch()` can't follow
+  (cross-origin, CORS-opaque), and `App.tsx` reported "Can't reach the
+  backend" with no way back to login. The detection had to rest on measured
+  behavior, not assumed: under `redirect: "manual"` the browser yields
+  `type "opaqueredirect"`, status 0 (measured live in umalab while it ran on
+  Access, for GET and JSON POST alike).
+- **Choice:** every `/api` call goes through one `request()` wrapper in
+  `api.ts` (`redirect: "manual"`); an opaqueredirect throws `SessionExpired`
+  — a plain `Error` carrying no status, so no caller can mistake it for a
+  backend answer — and notifies App, which latches a non-dismissable Session
+  Expired overlay. Sign In opens `/api/me` in a new tab, where the edge runs
+  the login; the original tab probes `/api/me` on returning focus (or Retry)
+  and stands down on any response that got past the edge, ok or not. A
+  rejected fetch proves nothing and leaves it up. Nothing reloads. The
+  service worker's `navigateFallbackDenylist` (`/api/`, `/cdn-cgi/`, landed
+  with the proxy in #24) is what lets the sign-in tab reach the edge at all.
+  Standing invariant: no `/api` route may ever answer with a redirect, or it
+  flashes this overlay — `app/main.py` routes are exact-match today.
+- **Alternatives rejected:** auto-reload — the SW-served shell means a reload
+  never reaches the login, and the Access cookie is origin-wide so a
+  background tab heals in place anyway; converting the redirect to a 401 in
+  the Pages Function — Access intercepts at the edge ahead of the function,
+  which never sees the request.
+- **What would change my mind:** Access answering fetches with something
+  other than a redirect (a 401 mode) — the wrapper then matches that and
+  `redirect: "manual"` can go; an offline queue (#7) landing, at which point
+  a failed check-off should be held for the post-re-auth retry instead of
+  dropped.

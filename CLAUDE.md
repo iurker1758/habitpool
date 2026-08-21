@@ -37,7 +37,8 @@ Backend (from `backend/`, venv in `.venv/`):
 Frontend (from `frontend/`):
 
 - `npm run dev` (proxies `/api` to `:8000`) · `npm run build` (typechecks via
-  `tsc -b`) · `npm run lint` (ESLint incl. react-hooks rules)
+  `tsc -b`) · `npm run lint` (ESLint incl. react-hooks rules) · `npm test`
+  (vitest, pure modules only — `src/**/*.test.ts`)
 
 Docs: `npx markdownlint-cli2` from the repo root lints all Markdown (rules in
 `.markdownlint.jsonc`; CI runs it as the `docs` job).

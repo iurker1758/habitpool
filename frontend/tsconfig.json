@@ -9,5 +9,5 @@
     "noEmit": true,
     "skipLibCheck": true
   },
-  "include": ["src", "functions"]
+  "include": ["src", "functions", "vitest.config.ts"]
 }
