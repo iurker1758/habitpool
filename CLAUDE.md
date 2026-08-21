@@ -10,8 +10,11 @@ Cloudflare Tunnel, with the SPA reaching the API through a same-origin Pages
 Function proxy; Cloudflare Access gates both frontend and API — the backend must
 validate the `Cf-Access-Jwt-Assertion` JWT and never trust the bare email header.
 The sibling app (umalab) already runs on this platform but uses its own Discord
-login; that is umalab-only — HabitPool stays on Access. Local hosting in the
-interim — don't add cloud-specific config until that work starts.
+login; that is umalab-only — HabitPool stays on Access. Deployment work is in
+progress: the backend verifies the Access JWT (`app/auth.py`) and the Pages
+proxy exists (`frontend/functions/api/[[path]].ts`); hostnames, AUD tags and
+`API_ORIGIN` live in the Cloudflare dashboard and the server's `.env`, never
+in the repo.
 
 Planned v1.5 (DECISIONS.md #11): one-off task bounties paid from a separate bounty
 channel of the pool — tasks must never share machinery with the habit/week snapshot

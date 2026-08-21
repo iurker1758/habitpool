@@ -7,6 +7,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
+      workbox: {
+        // The cached shell must never answer the /api/ proxy or the /cdn-cgi/
+        // Access callback (DECISIONS.md #10 update).
+        navigateFallbackDenylist: [/^\/api\//, /^\/cdn-cgi\//]
+      },
       manifest: {
         name: "HabitPool",
         short_name: "HabitPool",
