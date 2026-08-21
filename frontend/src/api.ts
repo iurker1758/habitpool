@@ -10,6 +10,7 @@ export interface Habit {
 
 export interface WeekSummary {
   start_day: string;
+  today: string;
   pool_cents: number;
   unlocked_cents: number;
   shares_permille: Record<number, number>;

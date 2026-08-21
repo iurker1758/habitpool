@@ -5,8 +5,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, dollars, Habit, onSessionExpired, SessionExpired, WeekSummary } from "./api";
 
-const todayISO = () => new Date().toISOString().slice(0, 10);
-
 export default function App() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [week, setWeek] = useState<WeekSummary | null>(null);
@@ -78,8 +76,10 @@ export default function App() {
     refresh();
   }, [refresh]);
 
+  // "Today" is the backend's APP_TIMEZONE date, carried in the summary — the
+  // same day a check-off lands on. The browser's clock is never consulted.
   const doneToday = (habitId: number) =>
-    week?.checkoff_days[habitId]?.includes(todayISO()) ?? false;
+    (week && week.checkoff_days[habitId]?.includes(week.today)) ?? false;
 
   const toggle = async (habit: Habit) => {
     const was = doneToday(habit.id);
