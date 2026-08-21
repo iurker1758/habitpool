@@ -4,17 +4,16 @@ Habit-formation PWA: completing daily habits unlocks slices of a weekly "fun mon
 pool. Monorepo: `backend/` (FastAPI + async SQLAlchemy + Postgres) and `frontend/`
 (Vite + React + TypeScript PWA). Why-docs live in `DECISIONS.md`.
 
-Deployment target (DECISIONS.md #9–10): frontend on Cloudflare Pages under a
-subdomain of an owned domain; backend + Postgres on a home mini PC behind
-Cloudflare Tunnel, with the SPA reaching the API through a same-origin Pages
-Function proxy; Cloudflare Access gates both frontend and API — the backend must
-validate the `Cf-Access-Jwt-Assertion` JWT and never trust the bare email header.
-The sibling app (umalab) already runs on this platform but uses its own Discord
-login; that is umalab-only — HabitPool stays on Access. Deployment work is in
-progress: the backend verifies the Access JWT (`app/auth.py`) and the Pages
-proxy exists (`frontend/functions/api/[[path]].ts`); hostnames, AUD tags and
-`API_ORIGIN` live in the Cloudflare dashboard and the server's `.env`, never
-in the repo.
+Deployed (DECISIONS.md #9–10): frontend on Cloudflare Pages under a subdomain
+of an owned domain; backend + Postgres on a home mini PC behind Cloudflare
+Tunnel, with the SPA reaching the API through a same-origin Pages Function proxy
+(`frontend/functions/api/[[path]].ts`); Cloudflare Access gates the frontend and
+the backend validates the `Cf-Access-Jwt-Assertion` JWT on every request
+(`app/auth.py`), never trusting the bare email header. The sibling app (umalab)
+runs on the same platform but uses its own Discord login; that is umalab-only —
+HabitPool stays on Access. Backend deploys are a server-side poll that pulls
+`main` once the tip's CI is green. Hostnames, AUD tags and `API_ORIGIN` live in
+the Cloudflare dashboard and the server's `.env`, never in the repo.
 
 Planned v1.5 (DECISIONS.md #11): one-off task bounties paid from a separate bounty
 channel of the pool — tasks must never share machinery with the habit/week snapshot

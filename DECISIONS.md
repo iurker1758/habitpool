@@ -93,7 +93,7 @@ Keep adding entries as the build evolves. This file is the interview.
 - **Rejected:** UTC everywhere — correct for servers, wrong for humans whose
   habits happen at local bedtime.
 
-## 9. Hosting: Cloudflare frontend + home-server backend (platform live; this app local for now)
+## 9. Hosting: Cloudflare frontend + home-server backend (deployed)
 
 - **Requirements:** near-zero recurring cost; a real domain I own, with the app on
   a subdomain; PWA assets delivered fast with free TLS; single user for now, so
@@ -129,6 +129,12 @@ Keep adding entries as the build evolves. This file is the interview.
   `/cdn-cgi/` so the proxy and the Access login callback are never answered
   by the cached shell. Still to do: the Pages project, Access application,
   tunnel route, database and deploy poll — all dashboard/server config.
+- **Update (2026-08-21, deployed):** all of that config is done and the app is
+  live in the shape described: Pages project with the custom domain, Access
+  application on the Pages hostname, tunnel public hostname for the API with
+  no Access application of its own (the backend's JWT check is the boundary
+  there), a dedicated database and role on the shared Postgres server, a
+  localhost-bound backend service, and the green-CI deploy poll.
 
 ## 10. Auth: Cloudflare Access instead of building login
 
