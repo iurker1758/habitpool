@@ -3,19 +3,17 @@ from the configured team is an identity; everything else is 401.
 """
 import asyncio
 import datetime as dt
-from collections.abc import AsyncIterator
 from typing import Any
 
 import httpx
 import jwt
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
-from httpx import ASGITransport, AsyncClient
+from httpx import AsyncClient
 from jwt.algorithms import RSAAlgorithm
 
 from app import auth
 from app.config import settings
-from app.main import app
 
 TEAM = "testteam"
 AUD = "aud-tag-for-habitpool"
@@ -71,12 +69,6 @@ def access_on(monkeypatch: pytest.MonkeyPatch) -> FakeJWKS:
     fake = FakeJWKS([_jwk(GOOD_KEY, "k1")])
     monkeypatch.setattr(auth, "jwks", fake)
     return fake
-
-
-@pytest.fixture
-async def client() -> AsyncIterator[AsyncClient]:
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://t") as c:
-        yield c
 
 
 async def test_valid_token_yields_email(client: AsyncClient, access_on: FakeJWKS):
