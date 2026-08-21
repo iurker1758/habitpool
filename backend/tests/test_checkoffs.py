@@ -78,18 +78,23 @@ async def test_delete_missing_is_noop(client: AsyncClient):
 
 async def test_future_day_rejected(client: AsyncClient):
     hid = await _habit(client)
+    # A year out rather than tomorrow: the endpoint re-reads local_today() at
+    # request time, so "tomorrow" stops being future across a midnight rollover.
     today = dt.date.fromisoformat((await _summary(client))["today"])
-    tomorrow = (today + dt.timedelta(days=1)).isoformat()
+    future = (today + dt.timedelta(days=365)).isoformat()
 
-    r = await client.post("/api/checkoffs", json={"habit_id": hid, "day": tomorrow})
+    r = await client.post("/api/checkoffs", json={"habit_id": hid, "day": future})
     assert r.status_code == 400
     assert await _count_rows() == 0
 
 
 async def test_default_day_is_local_today(client: AsyncClient):
     hid = await _habit(client)
-    today = (await _summary(client))["today"]
-
+    # Sampled on both sides of the POST so a midnight rollover in between
+    # cannot fail the test.
+    before = (await _summary(client))["today"]
     r = await client.post("/api/checkoffs", json={"habit_id": hid})
+    after = (await _summary(client))["today"]
     assert r.status_code == 201
-    assert r.json() == {"habit_id": hid, "day": today}
+    assert r.json()["habit_id"] == hid
+    assert r.json()["day"] in {before, after}
