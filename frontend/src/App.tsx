@@ -31,6 +31,22 @@ export default function App() {
 
   useEffect(() => onSessionExpired(() => setSessionExpired(true)), []);
 
+  // `today` is a fetch-time snapshot, so a tab that slept past APP_TIMEZONE
+  // midnight would otherwise keep yesterday's ticks. Coming back to the tab
+  // is when that matters; a tab that stays visible across midnight with no
+  // interaction still shows the old day until the first toggle's refresh.
+  useEffect(() => {
+    const onReturn = () => {
+      if (document.visibilityState === "visible") void refresh();
+    };
+    window.addEventListener("focus", onReturn);
+    document.addEventListener("visibilitychange", onReturn);
+    return () => {
+      window.removeEventListener("focus", onReturn);
+      document.removeEventListener("visibilitychange", onReturn);
+    };
+  }, [refresh]);
+
   // The overlay stands down only on proof the session is whole: any
   // response that got past the edge, ok or not. A fresh redirect throws
   // SessionExpired and leaves it up; a rejected fetch (network down)
