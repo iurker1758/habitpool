@@ -60,6 +60,11 @@ class CheckoffIn(BaseModel):
 
 class WeekSummary(BaseModel):
     start_day: dt.date
+    # The day a check-off with no explicit `day` lands on. The SPA marks
+    # "done today" against this, never its own clock: the browser's date
+    # (UTC or device-local) can differ from APP_TIMEZONE for hours each
+    # evening (issue #26).
+    today: dt.date
     pool_cents: int
     unlocked_cents: int
     shares_permille: dict[int, int]
@@ -177,6 +182,7 @@ async def current_week(session: AsyncSession = Depends(get_session)):
     unlocked = rewards.unlocked_cents(week.pool_cents, shares, counts)
     return WeekSummary(
         start_day=week.start_day,
+        today=local_today(),
         pool_cents=week.pool_cents,
         unlocked_cents=unlocked,
         shares_permille=shares,

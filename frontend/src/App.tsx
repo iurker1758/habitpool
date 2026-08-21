@@ -5,8 +5,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, dollars, Habit, onSessionExpired, SessionExpired, WeekSummary } from "./api";
 
-const todayISO = () => new Date().toISOString().slice(0, 10);
-
 export default function App() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [week, setWeek] = useState<WeekSummary | null>(null);
@@ -32,6 +30,22 @@ export default function App() {
   }, []);
 
   useEffect(() => onSessionExpired(() => setSessionExpired(true)), []);
+
+  // `today` is a fetch-time snapshot, so a tab that slept past APP_TIMEZONE
+  // midnight would otherwise keep yesterday's ticks. Coming back to the tab
+  // is when that matters; a tab that stays visible across midnight with no
+  // interaction still shows the old day until the first toggle's refresh.
+  useEffect(() => {
+    const onReturn = () => {
+      if (document.visibilityState === "visible") void refresh();
+    };
+    window.addEventListener("focus", onReturn);
+    document.addEventListener("visibilitychange", onReturn);
+    return () => {
+      window.removeEventListener("focus", onReturn);
+      document.removeEventListener("visibilitychange", onReturn);
+    };
+  }, [refresh]);
 
   // The overlay stands down only on proof the session is whole: any
   // response that got past the edge, ok or not. A fresh redirect throws
@@ -78,8 +92,10 @@ export default function App() {
     refresh();
   }, [refresh]);
 
+  // "Today" is the backend's APP_TIMEZONE date, carried in the summary — the
+  // same day a check-off lands on. The browser's clock is never consulted.
   const doneToday = (habitId: number) =>
-    week?.checkoff_days[habitId]?.includes(todayISO()) ?? false;
+    (week && week.checkoff_days[habitId]?.includes(week.today)) ?? false;
 
   const toggle = async (habit: Habit) => {
     const was = doneToday(habit.id);

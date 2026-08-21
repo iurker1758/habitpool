@@ -92,6 +92,18 @@ Keep adding entries as the build evolves. This file is the interview.
   local dates, not UTC timestamps.
 - **Rejected:** UTC everywhere — correct for servers, wrong for humans whose
   habits happen at local bedtime.
+- **Update (2026-08-21, issue #26):** the SPA never computes "today"
+  itself. `WeekSummary.today` carries the backend's `local_today()` — the
+  very day a check-off with no explicit `day` lands on — and the checkbox
+  compares against that. The browser's UTC date rolled over at 8pm ET every
+  evening and showed completed habits as undone. Rejected: formatting the
+  date in the app timezone client-side — that duplicates `APP_TIMEZONE` in
+  a second place with nothing keeping them in sync. The cost is that
+  `today` is a fetch-time snapshot, so the app refetches whenever the tab
+  regains focus or visibility; a tab that stays visible across midnight with
+  no interaction shows the old day until the first toggle's refresh. What
+  would change my mind: a second timezone per user — then `today` moves to
+  a per-user field and this entry's single-zone premise goes with it.
 
 ## 9. Hosting: Cloudflare frontend + home-server backend (deployed)
 
