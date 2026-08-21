@@ -161,7 +161,7 @@ export default function App() {
             </li>
           ))}
         </ul>
-        {habits.length === 0 && !error && (
+        {habits.length === 0 && !error && !sessionExpired && (
           <p>No habits yet — add your first three via the API docs at /docs.</p>
         )}
       </section>
