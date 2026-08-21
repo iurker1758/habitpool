@@ -120,6 +120,15 @@ Keep adding entries as the build evolves. This file is the interview.
   are green. Hostnames and env vars live in the Cloudflare dashboard and the
   server's `.env`, never in the repo. HabitPool adopts the same shape when it
   deploys; until then it stays local.
+- **Update (2026-08-21):** the repo side of that shape is in: the backend
+  verifies the Access JWT (#10, `app/auth.py`) and the Pages proxy is a
+  direct port of umalab's (`frontend/functions/api/[[path]].ts`, its #53 —
+  `API_ORIGIN` validated as a bare origin, redirects unfollowed with
+  API-origin `Location`s rewritten back to the app origin, matched on parsed
+  host). The service worker's navigation fallback excludes `/api/` and
+  `/cdn-cgi/` so the proxy and the Access login callback are never answered
+  by the cached shell. Still to do: the Pages project, Access application,
+  tunnel route, database and deploy poll — all dashboard/server config.
 
 ## 10. Auth: Cloudflare Access instead of building login
 

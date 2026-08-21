@@ -10,6 +10,8 @@ node_modules/
 dist/
 dev-dist/
 *.tsbuildinfo
+# wrangler pages dev state
+.wrangler/
 # env & editors
 .env
 .DS_Store
