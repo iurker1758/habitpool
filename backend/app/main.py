@@ -15,6 +15,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from . import rewards
+from .auth import AccessUser, current_user
 from .database import get_session
 from .models import APP_TIMEZONE, Checkoff, Habit, HabitStatus, HabitWeek, Week
 
@@ -29,7 +30,7 @@ def week_start(day: dt.date) -> dt.date:
     return day - dt.timedelta(days=day.weekday())  # Monday
 
 
-app = FastAPI(title="HabitPool")
+app = FastAPI(title="HabitPool", dependencies=[Depends(current_user)])
 
 app.add_middleware(
     CORSMiddleware,
@@ -67,6 +68,13 @@ class WeekSummary(BaseModel):
 
 class PoolIn(BaseModel):
     pool_cents: int = Field(ge=0)
+
+
+# ---------- identity ----------
+
+@app.get("/api/me", response_model=AccessUser)
+async def me(user: AccessUser = Depends(current_user)):
+    return user
 
 
 # ---------- habits ----------

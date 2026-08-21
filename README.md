@@ -56,6 +56,11 @@ npm run dev   # proxies /api to the backend
 
 Run the tests: `cd backend && pytest`
 
+Locally the API runs with Cloudflare Access auth off (every request acts as
+`dev@localhost`). When deployed behind Access, set `ACCESS_TEAM_DOMAIN` and
+`ACCESS_AUD` so the backend verifies the `Cf-Access-Jwt-Assertion` JWT on every
+request — see `backend/.env.example` and DECISIONS.md #10.
+
 ## How this was built
 
 Scaffolded and pair-programmed with Claude. The reward-allocation design,

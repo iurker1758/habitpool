@@ -14,5 +14,10 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost/habitpool"
 
+    # Cloudflare Access (DECISIONS.md #10). Both unset = auth off (local dev only).
+    # team domain is the `<team>` in https://<team>.cloudflareaccess.com
+    access_team_domain: str = ""
+    access_aud: str = ""
+
 
 settings = Settings()
