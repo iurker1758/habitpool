@@ -121,7 +121,9 @@ export default function App() {
             <h2 id="session-title">Session Expired</h2>
             <p>Your login session has expired. Sign in again in a new tab, then come back here.</p>
             <div className="session-actions">
-              <button onClick={() => window.open("/api/me", "_blank")}>Sign In</button>
+              <a className="session-signin" href="/api/me" target="_blank" rel="noopener">
+                Sign In
+              </a>
               <button className="session-retry" onClick={probeSession} disabled={checking}>
                 {checking ? "Checking…" : "Retry"}
               </button>
