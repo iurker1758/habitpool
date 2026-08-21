@@ -31,7 +31,8 @@ Backend (from `backend/`, venv in `.venv/`):
 - Config: `app/config.py` (pydantic-settings) — env vars override `.env` override defaults
 - Run: `uvicorn app.main:app --reload` (migrations must be applied first)
 - Migrations: `alembic upgrade head` · new: `alembic revision --autogenerate -m "..."`
-- Test: `pytest` · Lint: `ruff check .` · Types: `pyright` (strict; run with the
+- Test: `pytest` (API tests run on in-memory SQLite via `tests/conftest.py`, no
+  Postgres needed) · Lint: `ruff check .` · Types: `pyright` (strict; run with the
   venv active so it resolves site-packages)
 
 Frontend (from `frontend/`):
